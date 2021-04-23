@@ -11,12 +11,17 @@ endif()
 
 
 ##### Set default behavior #####
-set(DEFAULT_USE_SIMD Yes)
 set(DEFAULT_USE_OMP Yes)
 set(DEFAULT_USE_GPU No)
 set(DEFAULT_USE_PYTHON Yes)
 set(DEFAULT_USE_TEST Yes)
-set(DEFAULT_OPT_FLAGS "-mtune=native -march=native -mfpmath=both")
+if("${CMAKE_HOST_SYSTEM_PROCESSOR}" MATCHES "^x86.*")
+	set(DEFAULT_OPT_FLAGS "-mtune=native -march=native -mfpmath=both")
+	set(DEFAULT_USE_SIMD Yes)
+else()
+	set(DEFAULT_OPT_FLAGS "-mtune=native -march=native")
+	set(DEFAULT_USE_SIMD No)
+endif()
 
 if(NOT DEFINED USE_SIMD)
 	set(USE_SIMD ${DEFAULT_USE_SIMD})
@@ -64,12 +69,12 @@ set(EIGEN_INSTALL_DIR ${CMAKE_SOURCE_DIR}/include)
 set(EIGEN_INCLUDE_DIR ${EIGEN_INSTALL_DIR})
 ExternalProject_Add(
     eigen
-    URL https://gitlab.com/libeigen/eigen/-/archive/3.3.5/eigen-3.3.5.tar.gz
+    URL https://gitlab.com/libeigen/eigen/-/archive/3.3.7/eigen-3.3.7.tar.gz
     PREFIX ${EIGEN_BUILD_DIR}
     CONFIGURE_COMMAND ""
     BUILD_COMMAND ""
     INSTALL_COMMAND
-      ${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/Eigen ${EIGEN_INCLUDE_DIR}/Eigen 
+      ${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/Eigen ${EIGEN_INCLUDE_DIR}/Eigen
       && ${CMAKE_COMMAND} -E copy_directory ${EIGEN_BUILD_DIR}/src/eigen/unsupported ${EIGEN_INCLUDE_DIR}/unsupported
     TEST_COMMAND ""
 )
@@ -100,7 +105,7 @@ if(USE_PYTHON)
 		set(PYBIND11_INCLUDE_DIR ${PYBIND11_INSTALL_DIR}/include)
 		ExternalProject_Add(
 			pybind11_pop
-			URL http://github.com/pybind/pybind11/archive/v2.2.4.tar.gz
+			URL http://github.com/pybind/pybind11/archive/v2.5.0.tar.gz
 			PREFIX ${PYBIND11_BUILD_DIR}
 			CONFIGURE_COMMAND ""
 			BUILD_COMMAND ""
@@ -113,7 +118,7 @@ if(USE_PYTHON)
 		FetchContent_Declare(
 			pybind11_fetch
 			GIT_REPOSITORY https://github.com/pybind/pybind11
-			GIT_TAG v2.2.4
+			GIT_TAG v2.5.0
 		)
 		FetchContent_GetProperties(pybind11_fetch)
 		if(NOT pybind11_fetch_POPULATED)
@@ -240,7 +245,7 @@ elseif(MSVC)
 	endif()
 
 	# static link to multithread runtimes
-	set(variables 
+	set(variables
 		CMAKE_CXX_FLAGS_DEBUG
 		CMAKE_CXX_FLAGS_RELEASE
 		CMAKE_CXX_FLAGS_RELWITHDEBINFO

@@ -9,10 +9,13 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#ifdef _USE_SIMD
 #ifdef _MSC_VER
 #include <intrin.h>
 #else
 #include <x86intrin.h>
+#endif
 #endif
 
 //void multi_qubit_dense_matrix_gate_old_single(const UINT* target_qubit_index_list, UINT target_qubit_index_count, const CTYPE* matrix, CTYPE* state, ITYPE dim);
@@ -34,7 +37,7 @@ void multi_qubit_dense_matrix_gate(const UINT* target_qubit_index_list, UINT tar
 		//return;
 
 #ifdef _OPENMP
-		UINT threshold = 8;
+		UINT threshold = 10;
 		if (dim < (((ITYPE)1) << threshold)) {
 			multi_qubit_dense_matrix_gate_single(target_qubit_index_list, target_qubit_index_count, matrix, state, dim);
 		}

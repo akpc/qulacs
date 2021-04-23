@@ -10,10 +10,13 @@
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
+#ifdef _USE_SIMD
 #ifdef _MSC_VER
 #include <intrin.h>
 #else
 #include <x86intrin.h>
+#endif
 #endif
 
 #ifdef _USE_SIMD
@@ -24,7 +27,8 @@ void double_qubit_dense_matrix_gate_simd_low(UINT target_qubit_index1, UINT targ
 
 void double_qubit_dense_matrix_gate_c(UINT target_qubit_index1, UINT target_qubit_index2, const CTYPE matrix[16], CTYPE *state, ITYPE dim) {
 #ifdef _OPENMP
-	UINT threshold = 12;
+	UINT threshold = 13;
+	UINT default_thread_count = omp_get_max_threads();
 	if (dim < (((ITYPE)1) << threshold)) omp_set_num_threads(1);
 #endif
 
@@ -35,7 +39,7 @@ void double_qubit_dense_matrix_gate_c(UINT target_qubit_index1, UINT target_qubi
 #endif
 
 #ifdef _OPENMP
-	omp_set_num_threads(omp_get_max_threads());
+	omp_set_num_threads(default_thread_count);
 #endif
 }
 
@@ -648,8 +652,8 @@ void double_qubit_dense_matrix_gate_simd_middle(UINT target_qubit_index1, UINT t
 		__m256d vec_bef0, vec_aft0, vec_bef1, vec_aft1;
 		vec_bef0 = _mm256_loadu_pd(ptr_vec + basis00);		// (i1 r1 i0 r0)
 		vec_aft0 = _mm256_loadu_pd(ptr_vec + basis00 + 4);	// (i3 r3 i2 r2)
-		vec_bef1 = _mm256_loadu_pd(ptr_vec + basis10);		
-		vec_aft1 = _mm256_loadu_pd(ptr_vec + basis10 + 4);	
+		vec_bef1 = _mm256_loadu_pd(ptr_vec + basis10);
+		vec_aft1 = _mm256_loadu_pd(ptr_vec + basis10 + 4);
 
 		__m256d vec_u0, vec_u1, vec_u2, vec_u3;
 		__m256d vec_u0f, vec_u1f, vec_u2f, vec_u3f;

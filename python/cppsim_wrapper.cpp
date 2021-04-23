@@ -236,6 +236,16 @@ PYBIND11_MODULE(qulacs, m) {
 #endif
     mstate.def("inner_product", py::overload_cast<const QuantumState*, const QuantumState*>(&state::inner_product), "Get inner product", py::arg("state_bra"), py::arg("state_ket"));
     //mstate.def("inner_product", &state::inner_product);
+    //mstate.def("tensor_product", &state::tensor_product, pybind11::return_value_policy::take_ownership, "Get tensor product of states", py::arg("state_left"), py::arg("state_right"));
+    //mstate.def("permutate_qubit", &state::permutate_qubit, pybind11::return_value_policy::take_ownership, "Permutate qubits from state", py::arg("state"), py::arg("order"));
+    mstate.def("tensor_product", py::overload_cast<const QuantumState*, const QuantumState*>(&state::tensor_product), pybind11::return_value_policy::take_ownership, "Get tensor product of states", py::arg("state_left"), py::arg("state_right"));
+    mstate.def("tensor_product", py::overload_cast<const DensityMatrix*, const DensityMatrix*>(&state::tensor_product), pybind11::return_value_policy::take_ownership, "Get tensor product of states", py::arg("state_left"), py::arg("state_right"));
+    mstate.def("permutate_qubit", py::overload_cast<const QuantumState*, std::vector<UINT>>(&state::permutate_qubit), pybind11::return_value_policy::take_ownership, "Permutate qubits from state", py::arg("state"), py::arg("order"));
+    mstate.def("permutate_qubit", py::overload_cast<const DensityMatrix*, std::vector<UINT>>(&state::permutate_qubit), pybind11::return_value_policy::take_ownership, "Permutate qubits from state", py::arg("state"), py::arg("order"));
+
+    mstate.def("drop_qubit", &state::drop_qubit, pybind11::return_value_policy::take_ownership, "Drop qubits from state", py::arg("state"), py::arg("target"), py::arg("projection"));
+    mstate.def("partial_trace", py::overload_cast<const QuantumState*, std::vector<UINT>>(&state::partial_trace), pybind11::return_value_policy::take_ownership, "Take partial trace", py::arg("state"), py::arg("target_traceout"));
+    mstate.def("partial_trace", py::overload_cast<const DensityMatrix*, std::vector<UINT>>(&state::partial_trace), pybind11::return_value_policy::take_ownership, "Take partial trace", py::arg("state"), py::arg("target_traceout"));
 
     py::class_<QuantumGateBase>(m, "QuantumGateBase")
         .def("update_quantum_state", &QuantumGateBase::update_quantum_state, "Update quantum state", py::arg("state"))
@@ -417,7 +427,8 @@ PYBIND11_MODULE(qulacs, m) {
 
     mgate.def("to_matrix_gate", &gate::to_matrix_gate, pybind11::return_value_policy::take_ownership, "Convert named gate to matrix gate", py::arg("gate"));
     mgate.def("Probabilistic", &gate::Probabilistic, pybind11::return_value_policy::take_ownership, "Create probabilistic gate", py::arg("prob_list"), py::arg("gate_list"));
-    mgate.def("CPTP", &gate::CPTP, pybind11::return_value_policy::take_ownership, "Create completely-positive trace preserving map", py::arg("kraus_list"));
+	mgate.def("ProbabilisticInstrument", &gate::ProbabilisticInstrument, pybind11::return_value_policy::take_ownership, "Create probabilistic instrument gate", py::arg("prob_list"), py::arg("gate_list"), py::arg("register"));
+	mgate.def("CPTP", &gate::CPTP, pybind11::return_value_policy::take_ownership, "Create completely-positive trace preserving map", py::arg("kraus_list"));
 	mgate.def("CP", &gate::CP, pybind11::return_value_policy::take_ownership, "Create completely-positive map", py::arg("kraus_list"), py::arg("state_normalize"), py::arg("probability_normalize"), py::arg("assign_zero_if_not_matched"));
 	mgate.def("Instrument", &gate::Instrument, pybind11::return_value_policy::take_ownership, "Create instruments", py::arg("kraus_list"), py::arg("register"));
     mgate.def("Adaptive", &gate::Adaptive, pybind11::return_value_policy::take_ownership, "Create adaptive gate", py::arg("gate"), py::arg("condition"));
